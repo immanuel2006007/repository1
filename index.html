@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Analysis App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3f7;
+            --background-color: #f5f9fc;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #666666;
+            --success-color: #66bb6a;
+            --warning-color: #ffa726;
+            --error-color: #ef5350;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 1200px;
+            width: 90%;
+            margin: 2rem auto;
+            flex-grow: 1;
+        }
+
+        .card {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title i {
+            margin-right: 0.75rem;
+            font-size: 1.75rem;
+        }
+
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border 0.3s ease;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.2);
+        }
+
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-button {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-button:hover {
+            background-color: #f1f3f5;
+            transform: translateY(-2px);
+        }
+
+        .option-button.active {
+            border-color: var(--accent-color);
+            background-color: rgba(79, 195, 247, 0.1);
+        }
+
+        .option-button i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .option-button h3 {
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .option-button p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .action-button {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+        }
+
+        .action-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result-card {
+            display: none;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .result-card.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .copy-button {
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .copy-button:hover {
+            background-color: #e0e0e0;
+        }
+
+        .result-content {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.visible {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(79, 195, 247, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+
+        footer p {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .options {
+                flex-direction: column;
+            }
+
+            .option-button {
+                width: 100%;
+            }
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background-color: white;
+            color: var(--text-color);
+            padding: 1rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        .toast i {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .toast.success i {
+            color: var(--success-color);
+        }
+
+        .toast.error i {
+            color: var(--error-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-robot"></i> Text Analysis App</h1>
+        <p>Analyze, check, and transform your text with AI</p>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-keyboard"></i> Enter Your Text</h2>
+            <div class="input-area">
+                <textarea class="text-input" id="textInput" placeholder="Enter the text you want to analyze..."></textarea>
+            </div>
+
+            <h2 class="card-title"><i class="fas fa-tasks"></i> Choose Analysis Type</h2>
+            <div class="options">
+                <div class="option-button" data-option="plagiarism">
+                    <i class="fas fa-search"></i>
+                    <h3>Check Plagiarism</h3>
+                    <p>Determine if text is AI-generated or human-written</p>
+                </div>
+                <div class="option-button" data-option="grammar">
+                    <i class="fas fa-spell-check"></i>
+                    <h3>Check Grammar</h3>
+                    <p>Find and correct grammar mistakes in your text</p>
+                </div>
+                <div class="option-button" data-option="convert">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h3>AI to Human</h3>
+                    <p>Convert AI-generated text to sound more human</p>
+                </div>
+            </div>
+
+            <button id="analyzeButton" class="action-button" disabled>
+                <i class="fas fa-bolt"></i> Analyze Text
+            </button>
+        </div>
+
+        <div class="loading" id="loadingSpinner">
+            <div class="spinner"></div>
+            <p>Processing your text...</p>
+        </div>
+
+        <div class="result-card" id="resultCard">
+            <div class="result-header">
+                <h2 class="result-title"><i class="fas fa-clipboard-check"></i> <span id="resultType">Results</span></h2>
+                <button class="copy-button" id="copyButton">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            <div class="result-content" id="resultContent"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Text Analysis App. All rights reserved.</p>
+    </footer>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Current API endpoint (replace with your actual backend)
+        const API_URL = "https://openrouter.ai/api/v1";
+        
+        // DOM Elements
+        const textInput = document.getElementById('textInput');
+        const optionButtons = document.querySelectorAll('.option-button');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const resultCard = document.getElementById('resultCard');
+        const resultType = document.getElementById('resultType');
+        const resultContent = document.getElementById('resultContent');
+        const copyButton = document.getElementById('copyButton');
+        const toastContainer = document.getElementById('toastContainer');
+        
+        // State variables
+        let selectedOption = null;
+        
+        // Event listeners
+        textInput.addEventListener('input', validateInput);
+        
+        optionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                optionButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                selectedOption = button.dataset.option;
+                validateInput();
+            });
+        });
+        
+        analyzeButton.addEventListener('click', analyzeText);
+        
+        copyButton.addEventListener('click', () => {
+            navigator.clipboard.writeText(resultContent.textContent)
+                .then(() => showToast('Text copied to clipboard!', 'success'))
+                .catch(() => showToast('Failed to copy text', 'error'));
+        });
+        
+        // Functions
+        function validateInput() {
+            const hasText = textInput.value.trim().length > 0;
+            analyzeButton.disabled = !hasText || !selectedOption;
+        }
+        
+        function analyzeText() {
+            const text = textInput.value.trim();
+            if (!text || !selectedOption) return;
+            
+            // Show loading spinner
+            loadingSpinner.classList.add('visible');
+            resultCard.classList.remove('visible');
+            
+            // In a real application, this would be an actual API call
+            // For this demo, we'll simulate API calls with setTimeout
+            
+            setTimeout(() => {
+                try {
+                    let response;
+                    
+                    // Simulate different analysis types based on selection
+                    switch (selectedOption) {
+                        case 'plagiarism':
+                            resultType.textContent = 'Plagiarism Check Results';
+                            response = simulatePlagiarismCheck(text);
+                            break;
+                        case 'grammar':
+                            resultType.textContent = 'Grammar Check Results';
+                            response = simulateGrammarCheck(text);
+                            break;
+                        case 'convert':
+                            resultType.textContent = 'AI to Human Conversion';
+                            response = simulateAIToHuman(text);
+                            break;
+                        default:
+                            throw new Error('Invalid option selected');
+                    }
+                    
+                    // Display results
+                    loadingSpinner.classList.remove('visible');
+                    resultContent.textContent = response;
+                    resultCard.classList.add('visible');
+                    
+                } catch (error) {
+                    loadingSpinner.classList.remove('visible');
+                    showToast('Error processing your text: ' + error.message, 'error');
+                }
+            }, 2000); // Simulating API delay of 2 seconds
+        }
+        
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.classList.add('toast', type);
+            
+            const icon = document.createElement('i');
+            icon.classList.add('fas', type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle');
+            
+            toast.appendChild(icon);
+            toast.appendChild(document.createTextNode(message));
+            
+            toastContainer.appendChild(toast);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        // Simulated API responses - In a real app, these would be actual API calls
+        function simulatePlagiarismCheck(text) {
+            // Simple heuristic for demo: if text has complex structures, call it human
+            const complexity = text.split(/[.!?]/).length;
+            const wordCount = text.split(/\s+/).length;
+            
+            if (complexity > 5 && wordCount > 50) {
+                return `Analysis Result: HUMAN-WRITTEN (87% confidence)\n\nThe text shows natural variations in sentence structure and complexity that are typical of human writing. The flow is organic and contains subtle nuances in expression that AI systems typically struggle to replicate consistently.\n\nThe text demonstrates unique stylistic choices and contextual understanding that suggests human authorship.`;
+            } else {
+                return `Analysis Result: AI-GENERATED (92% confidence)\n\nThe text displays patterns commonly associated with AI-generated content, including consistent sentence structure and predictable word choices. The flow is more systematic than typically seen in human writing.\n\nThe content lacks some of the natural variations and imperfections that characterize human-written text.`;
+            }
+        }
+        
+        function simulateGrammarCheck(text) {
+            // For demo, we'll just highlight some common grammar issues
+            const commonErrors = [
+                { error: "it's", correct: "its" },
+                { error: "their", correct: "there" },
+                { error: "your", correct: "you're" },
+                { error: "affect", correct: "effect" },
+                { error: "were", correct: "where" }
+            ];
+            
+            let foundErrors = [];
+            let lowerText = text.toLowerCase();
+            
+            commonErrors.forEach(item => {
+                if (lowerText.includes(item.error)) {
+                    foundErrors.push(`"${item.error}" might need to be "${item.correct}" in some contexts`);
+                }
+            });
+            
+            if (foundErrors.length > 0) {
+                return `Grammar Check Complete\n\nPotential issues found:\n- ${foundErrors.join('\n- ')}\n\nRecommended corrections have been suggested. Please review the context to ensure appropriate usage.`;
+            } else {
+                return `Grammar Check Complete\n\nNo significant grammar issues were detected. The text appears to be well-structured and grammatically sound.`;
+            }
+        }
+        
+        function simulateAIToHuman(text) {
+            // For demo, we'll add some "human-like" elements to the text
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            let humanized = [];
+            
+            sentences.forEach((sentence, i) => {
+                let modified = sentence.trim();
+                
+                // Add some variations that make text seem more human
+                if (i % 3 === 0) {
+                    modified = "Actually, " + modified.charAt(0).toLowerCase() + modified.slice(1);
+                } else if (i % 4 === 0) {
+                    modified = modified + ", you know?";
+                } else if (i % 5 === 0) {
+                    modified = "I think " + modified.charAt(0).toLowerCase() + modified.slice(1);
+                }
+                
+                humanized.push(modified);
+            });
+            
+            return humanized.join('. ') + '.';
+        }
+    </script>
+</body>
+</html>
